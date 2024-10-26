@@ -457,6 +457,7 @@ class System(mjx.Model):
   dof: DoF
   actuator: Actuator
   init_q: jax.Array
+  default_motor_pos: jax.Array
   # only used in `brax.physics.spring` and `brax.physics.positional`:
   elasticity: jax.Array
   vel_damping: Union[float, jax.Array]
