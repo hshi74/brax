@@ -27,7 +27,7 @@ import multiprocessing as mp
 from joblib import Parallel, delayed
 
 
-def get_image(model: mujoco.MjModel, state: base.State, height: int, width: int, camera: Optional[str]=None, spacing: Optional[float]=1.0, num_vis: Optional[int]=25) -> np.ndarray:
+def get_image(model: mujoco.MjModel, state: base.State, height: int, width: int, camera: Optional[str]=None, spacing: Optional[float]=0.75, num_vis: Optional[int]=25) -> np.ndarray:
   # model = mujoco.MjModel.from_xml_path(model_xml)
   renderer = mujoco.Renderer(model, height=height, width=width)
   data = mujoco.MjData(model)
@@ -53,15 +53,20 @@ def get_image(model: mujoco.MjModel, state: base.State, height: int, width: int,
     # Initialize base data to capture static elements (e.g., floor)
     data = mujoco.MjData(model)
     data.qpos, data.qvel = state.q[0], state.qd[0]
+    x_shift = -(grid_cols - 1) * spacing / 2
+    y_shift = -(grid_rows - 1) * spacing / 2
+    # Shift the model's position
+    data.qpos[0] += x_shift
+    data.qpos[1] += y_shift
     mujoco.mj_forward(model, data)
 
     # Set up the camera to encompass the entire grid
     camera = mujoco.MjvCamera()
-    camera.lookat[:] = [0, (grid_rows - 1) * spacing / 2, 0]  # Adjust Z as needed
+    camera.lookat[:] = [0, 0, 0]  # Adjust Z as needed
 
-    camera.distance = max(grid_cols, grid_rows) * spacing # Zoom out to fit all models
+    camera.distance = 4.5 # Zoom out to fit all models
     camera.azimuth = 0
-    camera.elevation = -30 # Look down at the models
+    camera.elevation = -45 # Look down at the models
 
     # Update the scene with static elements
     renderer.update_scene(data, camera=camera)
@@ -73,8 +78,8 @@ def get_image(model: mujoco.MjModel, state: base.State, height: int, width: int,
       # Compute grid position
       row = idx // grid_cols
       col = idx % grid_cols
-      x_shift = col * spacing
-      y_shift = row * spacing
+      x_shift = col * spacing - (grid_cols - 1) * spacing / 2
+      y_shift = row * spacing - (grid_rows - 1) * spacing / 2
 
       # Shift the model's position
       data.qpos[0] += x_shift
