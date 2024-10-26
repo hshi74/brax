@@ -166,9 +166,10 @@ class PipelineEnv(Env):
       height: int = 240,
       width: int = 320,
       camera: Optional[str] = None,
+      eval: bool = False,
   ) -> Sequence[np.ndarray]:
     """Renders a trajectory using the MuJoCo renderer."""
-    return image.render_array(self.sys, trajectory, height, width, camera)
+    return image.render_array(self.sys, trajectory, height, width, camera, eval=eval)
 
 
 class Wrapper(Env):
