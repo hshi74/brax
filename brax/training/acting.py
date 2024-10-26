@@ -62,7 +62,7 @@ def render_video(
     current_step: int,
     render_every: int = 4,
     height: int = 480,
-    width: int = 640,
+    width: int = 720,
 ):
     # Define paths for each camera's video
     video_paths: List[str] = []
