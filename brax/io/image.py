@@ -31,8 +31,8 @@ def get_image(
     state: base.State,
     height: int,
     width: int,
-    renderer: mujoco.Renderer = None,
     camera: Optional[str] = None,
+    renderer: mujoco.Renderer = None,
     spacing: Optional[float] = 0.75,
     num_vis: Optional[int] = 25,
 ) -> np.ndarray:
@@ -103,10 +103,10 @@ def render_array(
 
     if isinstance(trajectory, list):
         if eval:
-            renderer = mujoco.Renderer(sys.mj_model, height=height, width=width)
             camera = camera or -1
+            renderer = mujoco.Renderer(sys.mj_model, height=height, width=width)
             return [
-                get_image(sys.mj_model, state, height, width, renderer, camera)
+                get_image(sys.mj_model, state, height, width, camera, renderer)
                 for state in trajectory
             ]
         else:
@@ -119,7 +119,9 @@ def render_array(
                 camera.elevation = -45  # Look down at the models
 
             # Prepare arguments for multiprocessing
-            args = [(sys.mj_model, state, height, width) for state in trajectory]
+            args = [
+                (sys.mj_model, state, height, width, camera) for state in trajectory
+            ]
             # with mp.Pool(processes=32) as pool:
             # Use imap for progress tracking with tqdm
             # frames = list(tqdm(pool.imap(get_image, args), total=len(trajectory), desc="Rendering frames"))
@@ -129,7 +131,7 @@ def render_array(
             # frames = [get_image(*arg) for arg in tqdm(args, desc="Rendering frames")]
             return frames
 
-    return get_image(sys, trajectory, height, width, camera)
+    return get_image(sys.mj_model, trajectory, height, width, camera)
 
 
 def render(
