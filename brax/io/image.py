@@ -36,9 +36,17 @@ def get_image(
     spacing: Optional[float] = 0.75,
     num_vis: Optional[int] = 25,
 ) -> np.ndarray:
-    # model = mujoco.MjModel.from_xml_path(model_xml)
+    # Set up the camera to encompass the entire grid
+    if camera is None:
+        camera = mujoco.MjvCamera()
+        camera.lookat[:] = [0, 0, 0]  # Adjust Z as needed
+        camera.distance = 4.5  # Zoom out to fit all models
+        camera.azimuth = 0
+        camera.elevation = -45  # Look down at the models
+
     if renderer is None:
         renderer = mujoco.Renderer(model, height=height, width=width)
+
     data = mujoco.MjData(model)
     if len(state.q.shape) == 1:
         data.qpos, data.qvel = state.q, state.qd
@@ -110,18 +118,8 @@ def render_array(
                 for state in trajectory
             ]
         else:
-            # Set up the camera to encompass the entire grid
-            if camera is None:
-                camera = mujoco.MjvCamera()
-                camera.lookat[:] = [0, 0, 0]  # Adjust Z as needed
-                camera.distance = 4.5  # Zoom out to fit all models
-                camera.azimuth = 0
-                camera.elevation = -45  # Look down at the models
-
             # Prepare arguments for multiprocessing
-            args = [
-                (sys.mj_model, state, height, width, camera) for state in trajectory
-            ]
+            args = [(sys.mj_model, state, height, width) for state in trajectory]
             # with mp.Pool(processes=32) as pool:
             # Use imap for progress tracking with tqdm
             # frames = list(tqdm(pool.imap(get_image, args), total=len(trajectory), desc="Rendering frames"))
@@ -131,7 +129,7 @@ def render_array(
             # frames = [get_image(*arg) for arg in tqdm(args, desc="Rendering frames")]
             return frames
 
-    return get_image(sys.mj_model, trajectory, height, width, camera)
+    return get_image(sys.mj_model, trajectory, height, width)
 
 
 def render(
