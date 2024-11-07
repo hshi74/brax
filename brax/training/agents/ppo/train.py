@@ -482,11 +482,11 @@ def train(
               (training_state.normalizer_params, training_state.params.policy)),
           training_metrics, run_name=run_name, current_step=current_step)
       # add env_state.metrics to metrics
-      if env_state.metrics:
-          # average env_state.metrics
-          metrics.update(
-              jax.tree_util.tree_map(lambda x: jnp.mean(x), env_state.metrics)
-          )
+      # if env_state.metrics:
+      #     # average env_state.metrics
+      #     metrics.update(
+      #         jax.tree_util.tree_map(lambda x: jnp.mean(x), env_state.metrics)
+      #     )
       logging.info(metrics)
       progress_fn(current_step, metrics)
       params = _unpmap(
