@@ -426,6 +426,7 @@ def train(
   if eval_randomization_fn is None:
     eval_randomization_fn = randomization_fn
 
+  v_eval_randomization_fn = None
   if eval_randomization_fn is not None:
     v_eval_randomization_fn = functools.partial(
         eval_randomization_fn, rng=jax.random.split(eval_key, num_eval_envs)
