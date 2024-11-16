@@ -423,11 +423,12 @@ def train(
   if not eval_env:
     eval_env = environment
 
-  v_eval_randomization_fn = v_randomization_fn
-  if eval_randomization_fn is not None:
-    v_eval_randomization_fn = functools.partial(
-        eval_randomization_fn, rng=jax.random.split(eval_key, num_eval_envs)
-    )
+  if eval_randomization_fn is None:
+    eval_randomization_fn = randomization_fn
+
+  v_eval_randomization_fn = functools.partial(
+      eval_randomization_fn, rng=jax.random.split(eval_key, num_eval_envs)
+  )
   eval_env = wrap_for_training(
       eval_env,
       episode_length=episode_length,
