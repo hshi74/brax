@@ -423,7 +423,7 @@ def train(
   if not eval_env:
     eval_env = environment
 
-  v_eval_randomization_fn = None
+  v_eval_randomization_fn = v_randomization_fn
   if eval_randomization_fn is not None:
     v_eval_randomization_fn = functools.partial(
         eval_randomization_fn, rng=jax.random.split(eval_key, num_eval_envs)
