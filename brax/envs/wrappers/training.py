@@ -212,27 +212,28 @@ class DomainRandomizationVmapWrapper(Wrapper):
       randomization_fn: Callable[[System], Tuple[System, System]],
   ):
     super().__init__(env)
-    self._sys_v, self._in_axes = randomization_fn(self.sys)
+    self._sys_v, self._in_axes, self._embeddings = randomization_fn(self.sys)
 
-  def _env_fn(self, sys: System) -> Env:
+  def _env_fn(self, sys: System, embedding: jax.Array) -> Env:
     env = self.env
     env.unwrapped.sys = sys
+    env.unwrapped.embedding = embedding
     return env
 
   def reset(self, rng: jax.Array) -> State:
-    def reset(sys, rng):
-      env = self._env_fn(sys=sys)
+    def reset(sys, embedding, rng):
+      env = self._env_fn(sys=sys, embedding=embedding)
       return env.reset(rng)
 
-    state = jax.vmap(reset, in_axes=[self._in_axes, 0])(self._sys_v, rng)
+    state = jax.vmap(reset, in_axes=[self._in_axes, 0, 0])(self._sys_v, self._embeddings, rng)
     return state
 
   def step(self, state: State, action: jax.Array) -> State:
-    def step(sys, s, a):
-      env = self._env_fn(sys=sys)
+    def step(sys, s, a, embedding):
+      env = self._env_fn(sys=sys, embedding=embedding)
       return env.step(s, a)
 
-    res = jax.vmap(step, in_axes=[self._in_axes, 0, 0])(
-        self._sys_v, state, action
+    res = jax.vmap(step, in_axes=[self._in_axes, 0, 0, 0])(
+        self._sys_v, state, action, self._embeddings
     )
     return res
